@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "alwaysStrict": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noFallthroughCasesInSwitch": true,
+    "target": "es2015",
+    "baseUrl": "./",
+    "moduleResolution": "node",
+    "declaration": true,
+    "removeComments": true,
+    "module": "commonjs",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "typeRoots": ["./node_modules/@types", "./node_modules/reflect-metadata"],
+    "types": ["reflect-metadata", "redux-create-reducer"]
+  },
+  "include": ["./**/*.ts"]
+}
