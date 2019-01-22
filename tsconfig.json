@@ -13,7 +13,7 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "typeRoots": ["./node_modules/@types", "./node_modules/reflect-metadata"],
-    "types": ["reflect-metadata", "redux-create-reducer"]
+    "types": ["reflect-metadata", "redux-create-reducer", "jest"]
   },
   "include": ["./**/*.ts"]
 }
