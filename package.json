@@ -44,6 +44,7 @@
     "tslint": "^5.12.1",
     "tslint-config-prettier": "^1.17.0",
     "tslint-config-standard": "^8.0.1",
+    "typelevel-ts": "^0.3.5",
     "typescript": "^3.2.4"
   },
   "dependencies": {

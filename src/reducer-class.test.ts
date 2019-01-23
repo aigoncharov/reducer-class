@@ -5,6 +5,7 @@ import { ActionStandard } from 'flux-action-class'
 
 import { Action } from './decorator-action'
 import { ReducerClass } from './reducer-class'
+import { Immutable } from './reducer-class-helpers'
 
 describe(ReducerClass.name, () => {
   test('creates a reducer', () => {
@@ -22,7 +23,7 @@ describe(ReducerClass.name, () => {
         }
       }
       @Action(Action2)
-      public test2(state: ITestState, draft: ITestState, action: Action2) {
+      public test2(state: Immutable<ITestState>, draft: ITestState, action: Action2) {
         draft.sum += action.payload
       }
     }

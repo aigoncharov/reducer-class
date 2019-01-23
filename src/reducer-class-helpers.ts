@@ -1,8 +1,10 @@
 import { produce } from 'immer'
+import { DeepReadonlyArray, DeepReadonlyObject } from 'typelevel-ts'
 
 import { METADATA_KEY_ACTION } from './constants'
 import { MetadataActionMissingError } from './errors'
 
+export type Immutable<T> = T extends object ? DeepReadonlyObject<T> : T extends any[] ? DeepReadonlyArray<T> : T
 export interface IReducerMap<T> {
   [actionType: string]: (state: T, action: any) => T
 }
@@ -24,7 +26,7 @@ export class ReducerClassHelpers {
     return method.length !== 3
   }
   public static addImmerIfNeeded<T>(method: ReducerPure<T> | ReducerImmer<T>): ReducerPure<T> {
-    if (this.typeGuardReducerPure(method)) {
+    if (this.typeGuardReducerPure<T>(method)) {
       return method
     }
     return (state: T, action: any): T => produce(state, (draft) => method(state, draft as T, action))
