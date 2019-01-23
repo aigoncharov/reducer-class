@@ -1,4 +1,4 @@
-# reducer-class
+# reducer-class [![Build Status](https://travis-ci.org/keenondrums/reducer-class.svg?branch=master)](https://travis-ci.org/keenondrums/reducer-class)
 
 Boilerplate free class-based reducer creator. Built with TypeScript. Works with Redux and NGRX. Has integration with [immer](https://github.com/mweststrate/immer).
 
