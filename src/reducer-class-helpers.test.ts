@@ -78,18 +78,30 @@ describe(ReducerClassHelpers.name, () => {
       })
     })
     test('returns a reducer map and merges reducers for the same action types', () => {
+      const actionType1 = 'test1'
+      const actionType2 = 'test2'
       const item1: IReducerClassMethodWithActionType<any> = {
-        actionType: 'test1',
+        actionType: actionType1,
         method: (state: number, action: any) => state + 1,
       }
       const item2: IReducerClassMethodWithActionType<any> = {
-        actionType: 'test1',
-        method: (state: number, action: any) => state + 1,
+        actionType: actionType1,
+        method: (state: number, action: any) => state + 2,
       }
-      const reducerMap = ReducerClassHelpers.getReducerMap([item1, item2])
-      expect(Object.keys(reducerMap)).toEqual([item1.actionType])
-      const res = reducerMap[item1.actionType](0, null)
-      expect(res).toBe(2)
+      const item3: IReducerClassMethodWithActionType<any> = {
+        actionType: actionType2,
+        method: (state: number, action: any) => state + 3,
+      }
+      const item4: IReducerClassMethodWithActionType<any> = {
+        actionType: actionType2,
+        method: (state: number, action: any) => state + 4,
+      }
+      const reducerMap = ReducerClassHelpers.getReducerMap([item1, item2, item3, item4])
+      expect(Object.keys(reducerMap)).toEqual([actionType1, actionType2])
+      const res1 = reducerMap[actionType1](0, null)
+      expect(res1).toBe(3)
+      const res2 = reducerMap[actionType2](0, null)
+      expect(res2).toBe(7)
     })
   })
 
