@@ -28,13 +28,21 @@ describe(ReducerClass.name, () => {
     }
 
     const testReducer = Test.create()
-    const res1 = testReducer(undefined, new Action1())
-    expect(res1).toEqual({
+    const res11 = testReducer(undefined, new Action1())
+    expect(res11).toEqual({
       sum: 11,
     })
-    const res2 = testReducer(undefined, new Action2(3))
-    expect(res2).toEqual({
+    const res12 = testReducer(res11, new Action1())
+    expect(res12).toEqual({
+      sum: 12,
+    })
+    const res21 = testReducer(undefined, new Action2(3))
+    expect(res21).toEqual({
       sum: 14,
+    })
+    const res22 = testReducer(res21, new Action2(5))
+    expect(res22).toEqual({
+      sum: 20,
     })
   })
 })
