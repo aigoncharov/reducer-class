@@ -6,7 +6,7 @@ export interface IAction {
 }
 export type IActionConstructor = new (...args: any[]) => IAction
 const typeGuardActionHasOwnType = (action: IAction | IActionConstructor): action is IAction =>
-  typeof (action as IAction).type === 'string'
+  typeof (action as IAction).type === 'string' // tslint:disable-line strict-type-predicates
 const typeGuardActionIsString = (action: IAction | IActionConstructor | string): action is string =>
   typeof action === 'string'
 export const Action = (...actions: Array<IAction | IActionConstructor | string>): MethodDecorator => (
