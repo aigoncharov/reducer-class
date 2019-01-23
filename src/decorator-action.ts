@@ -35,7 +35,7 @@ const checkParamTypeIsAction = (paramType: any): boolean => {
     return false
   }
 }
-export const ActionAuto: MethodDecorator = (target, propertyKey) => {
+export const ActionReflect: MethodDecorator = (target, propertyKey) => {
   const methodParamTypes = Reflect.getMetadata(METADATA_KEY_METHOD_PARAMS, target, propertyKey)
   if (
     !methodParamTypes ||

@@ -4,7 +4,7 @@ import 'reflect-metadata'
 import { ActionStandard } from 'flux-action-class'
 
 import { METADATA_KEY_ACTION } from './constants'
-import { Action, ActionAuto } from './decorator-action'
+import { Action, ActionReflect } from './decorator-action'
 import { ActionTypeUnclearError, MetadataActionPropsMissingError } from './errors'
 
 describe('Action', () => {
@@ -40,7 +40,7 @@ describe('Action', () => {
   })
 })
 
-describe('ActionAuto', () => {
+describe('ActionReflect', () => {
   test('sets metadata', () => {
     const prop1 = 'test1'
     const prop2 = 'test2'
@@ -53,16 +53,16 @@ describe('ActionAuto', () => {
       constructor(public payload: any) {}
     }
     class Test {
-      @ActionAuto
+      @ActionReflect
       public [prop1](state: any, action: Action1) {} // tslint:disable-line no-empty
 
-      @ActionAuto
+      @ActionReflect
       public [prop2](state: any, action: Action2) {} // tslint:disable-line no-empty
 
-      @ActionAuto
+      @ActionReflect
       public [prop3](state: any, draft: any, action: Action1) {} // tslint:disable-line no-empty
 
-      @ActionAuto
+      @ActionReflect
       public [prop4](state: any, draft: any, action: Action2) {} // tslint:disable-line no-empty
     }
     const metadataExpected1 = [Action1.type]
@@ -88,7 +88,7 @@ describe('ActionAuto', () => {
     const createFalseClass = () => {
       // @ts-ignore
       class Test {
-        @ActionAuto
+        @ActionReflect
         public test() {} // tslint:disable-line no-empty
       }
     }
@@ -98,7 +98,7 @@ describe('ActionAuto', () => {
     const createFalseClass = () => {
       // @ts-ignore
       class Test {
-        @ActionAuto
+        @ActionReflect
         public test(arg1: any, arg2: any, arg3: any, arg4: any) {} // tslint:disable-line no-empty
       }
     }
@@ -108,7 +108,7 @@ describe('ActionAuto', () => {
     const createFalseClass = () => {
       // @ts-ignore
       class Test {
-        @ActionAuto
+        @ActionReflect
         public test(arg1: any, arg2: undefined) {} // tslint:disable-line no-empty
       }
     }
