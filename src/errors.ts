@@ -5,6 +5,14 @@ export class MetadataActionMissingError extends Error {
   }
 }
 
+export class ActionTypeUnclearError extends Error {
+  constructor(methodName: string) {
+    super(
+      `Action type is unclear for ${methodName}. It must be one class only. Do you pass and interface or a union type?`,
+    )
+  }
+}
+
 export class MetadataActionPropsMissingError extends Error {
   constructor(methodName: string) {
     super(

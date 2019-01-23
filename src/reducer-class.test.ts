@@ -3,7 +3,7 @@ import 'reflect-metadata'
 
 import { ActionStandard } from 'flux-action-class'
 
-import { Action } from './decorator-action'
+import { Action, ActionAuto } from './decorator-action'
 import { ReducerClass } from './reducer-class'
 import { Immutable } from './reducer-class-helpers'
 
@@ -22,7 +22,7 @@ describe(ReducerClass.name, () => {
           sum: state.sum + 1,
         }
       }
-      @Action(Action2)
+      @ActionAuto
       public test2(state: Immutable<ITestState>, draft: ITestState, action: Action2) {
         draft.sum += action.payload
       }
