@@ -210,7 +210,7 @@ class ReducerCat extends ReducerClass {
 const reducer = ReducerCat.create()
 ```
 
-> We can not use `ActionReflect` in JavaScript because there's no complie which provides us with metadata for type reflection.
+> We can not use `ActionReflect` in JavaScript because there's no compiler which provides us with metadata for type reflection.
 
 > Be aware, you have to configure [babel](https://babeljs.io/) to provide you with decorator syntax.
 
@@ -250,7 +250,7 @@ const reducer = ReducerCat.create()
 
 If your reducer expects 3 arguments `reducer-class` automatically wraps it with `produce` from [immer](https://github.com/mweststrate/immer).
 
-1. Original readonly state
+1. Original read-only state
 1. Draft of the new state that you should mutate
 1. Action
 
@@ -292,7 +292,7 @@ const reducer = ReducerCat.create()
 
 ### When to use `@ActionReflect`
 
-You can use `@ActionReflect` if you want to run a reducer function for a single action. **Works with TypeScript only!** Action must be a class-based action. It can be a flux-action-class' action, a classic NGRX class-based action or any other class which has eaither a static property `type` or a property `type` on the instance of the class.
+You can use `@ActionReflect` if you want to run a reducer function for a single action. **Works with TypeScript only!** Action must be a class-based action. It can be a flux-action-class' action, a classic NGRX class-based action or any other class which has either a static property `type` or a property `type` on the instance of the class.
 
 ### Running several reducers for the same action
 
@@ -339,6 +339,6 @@ console.log(res2) // logs 135: 130 - previous value, 5 is added by addEnergy
 ## How does it compare to [ngrx-actions](https://github.com/amcdnl/ngrx-actions)?
 
 1. Stricter typings. Now you'll never forget to add initial state, return a new state from your reducer and accidentally invoke `immer` as a result and etc.
-1. `@ActionReflect` can be used to automaticaly reflect a corresponding action from the type.
+1. `@ActionReflect` can be used to automatically reflect a corresponding action from the type.
 1. `ngrx-actions` doesn't allow matching several reducers to the same action, while `reducer-class` allows you to do that and merges them for you.
 1. `reducer-class` is built with both worlds, Angular and Redux, in mind. It means equal support for both of them!
