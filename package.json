@@ -1,7 +1,7 @@
 {
   "name": "reducer-class",
   "version": "1.0.0",
-  "description": "",
+  "description": "Boilerplate free class-based reducer creator. Built with TypeScript. Works with Redux and NGRX. Has integration with immer.",
   "main": "dist/index.js",
   "scripts": {
     "test": "npx jest -i",
