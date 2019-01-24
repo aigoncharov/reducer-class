@@ -20,7 +20,7 @@ Consider using it with [flux-action-class](https://github.com/keenondrums/flux-a
   - [Old school: JavaScript](#old-school-javascript)
 - [Integration with `immer`](#integration-with-immer)
 - [In depth](#in-depth)
-  - [When to use `@ActionReflect`](#when-to-use-actionreflect)
+  - [When we can we omit list of actions for `@Action`?](#when-we-can-we-omit-list-of-actions-for-action)
   - [Running several reducers for the same action](#running-several-reducers-for-the-same-action)
 - [How does it compare to ngrx-actions?](#how-does-it-compare-to-ngrx-actions)
 
@@ -68,7 +68,7 @@ Consider using it with [flux-action-class](https://github.com/keenondrums/flux-a
 
 ```ts
 import { ActionStandard } from 'flux-action-class'
-import { Action, ActionReflect, ReducerClass } from 'reducer-class'
+import { Action, ReducerClass } from 'reducer-class'
 
 class ActionCatEat extends ActionStandard<number> {}
 class ActionCatPlay extends ActionStandard<number> {}
@@ -82,7 +82,7 @@ class ReducerCat extends ReducerClass<IReducerCatState> {
     energy: 100,
   }
 
-  @ActionReflect
+  @Action
   addEnergy(state: IReducerCatState, action: ActionCatEat) {
     return {
       energy: state.energy + action.payload,
@@ -103,7 +103,7 @@ const reducer = ReducerCat.create()
 ### Classic NGRX actions
 
 ```ts
-import { Action, ActionReflect, ReducerClass } from 'reducer-class'
+import { Action, ReducerClass } from 'reducer-class'
 
 class ActionCatEat {
   type = 'ActionCatEat'
@@ -126,7 +126,7 @@ class ReducerCat extends ReducerClass<IReducerCatState> {
     energy: 100,
   }
 
-  @ActionReflect
+  @Action
   addEnergy(state: IReducerCatState, action: ActionCatEat) {
     return {
       energy: state.energy + action.payload,
@@ -179,7 +179,7 @@ class ReducerCat extends ReducerClass<IReducerCatState> {
 const reducer = ReducerCat.create()
 ```
 
-> You might have noticed that `ActionReflect` is missing in this version. It's because we no longer use classes for our actions and TypeScript can not provide type metadata.
+> You might have noticed that we always pass actions to `Action` in this version. It's because we no longer use classes for our actions and TypeScript can not provide type metadata.
 
 ### JavaScript with flux-action-class
 
@@ -214,7 +214,7 @@ class ReducerCat extends ReducerClass {
 const reducer = ReducerCat.create()
 ```
 
-> We can not use `ActionReflect` in JavaScript because there's no compiler which provides us with metadata for type reflection.
+> We can not use `Action` without arguments in JavaScript because there's no compiler which provides us with metadata for type reflection.
 
 > Be aware, you have to configure [babel](https://babeljs.io/) to provide you with decorator syntax.
 
@@ -262,7 +262,7 @@ Why 3? [Read pitfall #3 from immer's official documentation.](https://github.com
 
 ```ts
 import { ActionStandard } from 'flux-action-class'
-import { Action, ActionReflect, ReducerClass, Immutable } from 'reducer-class'
+import { Action, ReducerClass, Immutable } from 'reducer-class'
 
 class ActionCatEat extends ActionStandard<number> {}
 class ActionCatPlay extends ActionStandard<number> {}
@@ -276,7 +276,7 @@ class ReducerCat extends ReducerClass<IReducerCatState> {
     energy: 100,
   }
 
-  @ActionReflect
+  @Action
   addEnergy(state: Immutable<IReducerCatState>, draft: IReducerCatState, action: ActionCatEat) {
     draft.energy += action.payload
   }
@@ -294,9 +294,9 @@ const reducer = ReducerCat.create()
 
 ## In depth
 
-### When to use `@ActionReflect`
+### When we can we omit list of actions for `@Action`?
 
-You can use `@ActionReflect` if you want to run a reducer function for a single action. **Works with TypeScript only!** Action must be a class-based action. It can be a flux-action-class' action, a classic NGRX class-based action or any other class which has either a static property `type` or a property `type` on the instance of the class.
+You can omit list of actions for `@Action` if you want to run a reducer function for a single action. **Works with TypeScript only!** Action must be a class-based action. It can be a flux-action-class' action, a classic NGRX class-based action or any other class which has either a static property `type` or a property `type` on the instance of the class.
 
 ### Running several reducers for the same action
 
@@ -304,7 +304,7 @@ If you have declare several reducer functions corresponding to the same action `
 
 ```ts
 import { ActionStandard } from 'flux-action-class'
-import { Action, ActionReflect, ReducerClass } from 'reducer-class'
+import { Action, ReducerClass } from 'reducer-class'
 
 class ActionCatEat extends ActionStandard<number> {}
 class ActionCatSleep extends ActionStandard<number> {}
@@ -324,7 +324,7 @@ class ReducerCat extends ReducerClass<IReducerCatState> {
     }
   }
 
-  @ActionReflect
+  @Action
   addMoreEnergy(state: IReducerCatState, action: ActionCatSleep) {
     return {
       energy: state.energy + action.payload * 2,
@@ -343,6 +343,6 @@ console.log(res2) // logs 135: 130 - previous value, 5 is added by addEnergy
 ## How does it compare to [ngrx-actions](https://github.com/amcdnl/ngrx-actions)?
 
 1. Stricter typings. Now you'll never forget to add initial state, return a new state from your reducer and accidentally invoke `immer` as a result and etc.
-1. `@ActionReflect` can be used to automatically reflect a corresponding action from the type.
+1. `@Action` can be used to automatically reflect a corresponding action from the type.
 1. `ngrx-actions` doesn't allow matching several reducers to the same action, while `reducer-class` allows you to do that and merges them for you.
 1. `reducer-class` is built with both worlds, Angular and Redux, in mind. It means equal support for both of them!
