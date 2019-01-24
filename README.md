@@ -32,7 +32,7 @@ Consider using it with [flux-action-class](https://github.com/keenondrums/flux-a
 
 1. Run
    ```
-   npm i reducer-class
+   npm i reducer-class immer
    ```
 1. If you use TypeScript set in you tsconfig.json
 
@@ -41,11 +41,13 @@ Consider using it with [flux-action-class](https://github.com/keenondrums/flux-a
    "emitDecoratorMetadata": true,
    ```
 
+1. If you use JavaScript configure your babel to support decorators
+
 ### React
 
 1. Run
    ```
-   npm i reducer-class reflect-metadata
+   npm i reducer-class immer reflect-metadata
    ```
 1. At the top of your project root file (most probably `index.tsx`) add
    ```ts
@@ -57,6 +59,8 @@ Consider using it with [flux-action-class](https://github.com/keenondrums/flux-a
    "experimentalDecorators": true,
    "emitDecoratorMetadata": true,
    ```
+
+1. If you use JavaScript configure your babel to support decorators
 
 ## Quick start
 
