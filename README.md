@@ -345,4 +345,4 @@ console.log(res2) // logs 135: 130 - previous value, 5 is added by addEnergy
 1. Stricter typings. Now you'll never forget to add initial state, return a new state from your reducer and accidentally invoke `immer` as a result and etc.
 1. `@Action` can be used to automatically reflect a corresponding action from the type.
 1. `ngrx-actions` doesn't allow matching several reducers to the same action, while `reducer-class` allows you to do that and merges them for you.
-1. `reducer-class` is built with both worlds, Angular and Redux, in mind. It means equal support for both of them!
+1. `reducer-class` is built with both worlds, Angular and Redux, in mind. It means equal support for all of them!

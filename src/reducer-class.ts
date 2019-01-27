@@ -20,8 +20,7 @@ export abstract class ReducerClass<T> implements IReducerClassConstraint<T> {
       keys,
     )
     const reducerMap = ReducerClassHelpers.getReducerMap(reducersWithActionTypes)
-    // TODO: Remove 'as' once there's an new version of https://github.com/kolodny/redux-create-reducer
-    return createReducer<T>((instance as ReducerClass<T>).initialState, reducerMap) as Reducer<T>
+    return createReducer<T>((instance as ReducerClass<T>).initialState, reducerMap)
   }
 
   public abstract initialState: T
