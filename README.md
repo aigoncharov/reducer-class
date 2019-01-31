@@ -292,6 +292,8 @@ const reducer = ReducerCat.create()
 
 > You might have noticed a new import - `Immutable`. It's just a cool name for [DeepReadonly type](https://github.com/gcanti/typelevel-ts#deepreadonly). You don't have to use it. The example above would work just fine if used just `IReducerCatState`. Yet it's recommended to wrap it with `Immutable` to ensure that you never mutate it.
 
+> Actually it makes total sense to use `Immutable` for state of regular reducers as well to make sure you never modify state directly.
+
 ## In depth
 
 ### When we can we omit list of actions for `@Action`?
@@ -300,7 +302,7 @@ You can omit list of actions for `@Action` if you want to run a reducer function
 
 ### Running several reducers for the same action
 
-If you have declare several reducer functions corresponding to the same action `reducer-class` runs all of them serially (it uses its own implementation of (reduce-reducers)[https://github.com/redux-utilities/reduce-reducers]). The order is defined by [Object.keys](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys).
+If you have declare several reducer functions corresponding to the same action `reducer-class` runs all of them serially. It uses its own implementation of (reduce-reducers)[https://github.com/redux-utilities/reduce-reducers]. The order is defined by [Object.keys](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys).
 
 ```ts
 import { ActionStandard } from 'flux-action-class'
