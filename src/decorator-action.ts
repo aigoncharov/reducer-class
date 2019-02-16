@@ -7,7 +7,6 @@ export interface IAction {
 export type IActionCreator = (...args: any[]) => IAction
 export type IActionConstructor = new (...args: any[]) => IAction
 const isArrowFunction = (action: IActionConstructor | IActionCreator): action is IActionCreator => !action.prototype
-const isES6Class = (action: IActionConstructor | IActionCreator): boolean => action.toString().indexOf('class') === 0
 const typeGuardActionHasOwnType = (action: IAction | IActionConstructor | IActionCreator): action is IAction =>
   typeof (action as IAction).type === 'string' // tslint:disable-line strict-type-predicates
 const typeGuardActionIsString = (action: IAction | IActionConstructor | IActionCreator | string): action is string =>
@@ -19,11 +18,6 @@ const getActionType = (action: IAction | IActionConstructor | IActionCreator | s
   }
   if (typeGuardActionHasOwnType(action)) {
     return action.type
-  }
-  // ES6 classes can not be invoked without `new` so we handle them separately
-  if (isES6Class(action)) {
-    const classInstance = new (action as IActionConstructor)()
-    return classInstance.type
   }
   try {
     if (isArrowFunction(action)) {
