@@ -19,7 +19,7 @@ Consider using it with [flux-action-class](https://github.com/keenondrums/flux-a
   - [Old school: action type constants](#old-school-action-type-constants)
 - [Integration with `immer`](#integration-with-immer)
 - [In depth](#in-depth)
-  - [When we can we omit list of actions for `@Action`?](#when-we-can-we-omit-list-of-actions-for-action)
+  - [When can we omit list of actions for `@Action`?](#when-can-we-omit-list-of-actions-for-action)
   - [Running several reducers for the same action](#running-several-reducers-for-the-same-action)
 - [How does it compare to ngrx-actions?](#how-does-it-compare-to-ngrx-actions)
 
@@ -425,7 +425,7 @@ const reducer = ReducerCat.create()
 
 ## In depth
 
-### When we can we omit list of actions for `@Action`?
+### When can we omit list of actions for `@Action`?
 
 You can omit list of actions for `@Action` if you want to run a reducer function for a single action. **Works with TypeScript only!** Action must be a class-based action. It can be a flux-action-class' action, a classic NGRX class-based action or any other class which has either a static property `type` or a property `type` on the instance of the class.
 
