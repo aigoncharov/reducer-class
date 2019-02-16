@@ -27,10 +27,10 @@ const getActionType = (action: IAction | IActionConstructor | IActionCreator | s
   }
   try {
     if (isArrowFunction(action)) {
-      const actionCreatorArrowFnRes = (action as IActionCreator)()
+      const actionCreatorArrowFnRes = action()
       return actionCreatorArrowFnRes.type
     }
-    const classInstance = new (action as IActionConstructor)()
+    const classInstance = new action()
     return classInstance.type
   } catch {
     // Fall back in case action construction failed due to missing arguments
