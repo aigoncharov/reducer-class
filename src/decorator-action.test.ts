@@ -2,9 +2,10 @@
 import 'reflect-metadata'
 
 import { ActionStandard } from 'flux-action-class'
+import { createAction } from 'redux-actions'
 
 import { METADATA_KEY_ACTION } from './constants'
-import { Action } from './decorator-action'
+import { Action, IActionConstructor } from './decorator-action'
 import { ActionTypeUnclearError, MetadataActionPropsMissingError } from './errors'
 
 describe('Action', () => {
@@ -87,19 +88,69 @@ describe('Action', () => {
   describe('without reflection', () => {
     test('sets metadata', () => {
       const prop = 'test'
+      // Check works with flux-action-standard
       class Action1 extends ActionStandard {}
+      // Check works with plain strings
       const actionType2 = 'actionType2'
       class Action3 extends ActionStandard {}
+      // Check works with ES6 classes
       const action4Type = 'action4Type'
       class Action4 {
         public readonly type = action4Type
         constructor(public payload: any) {}
       }
+      // Check works with ES5 clases
+      const actionTypeES5Class = 'actionTypeES5Class'
+      function ActionES5Class(this: any) {
+        this.type = actionTypeES5Class
+      }
+      // Check works with redux-actions
+      const actionTypeReduxActions1 = 'actionTypeReduxActions1'
+      const actionCreatorReduxActions1 = createAction(actionTypeReduxActions1)
+      const actionTypeReduxActionsFailsDueToMissingArguments = 'actionTypeReduxActionsFailsDueToMissingArguments'
+      const actionCreatorReduxActionsFailsDueToMissingArguments = createAction(
+        actionTypeReduxActionsFailsDueToMissingArguments,
+        () => {
+          throw new Error()
+        },
+      )
+      // Checl works with arrow function action creators
+      const actionTypeArrowFn1 = 'actionTypeArrowFn1'
+      const actionCreatorArrowFn1 = () => ({
+        type: actionTypeArrowFn1,
+      })
+      // Checl works with regular function action creators
+      const actionTypeRegularFn1 = 'actionTypeArrowFn1'
+      function actionCreatorRegularFn1() {
+        return {
+          type: actionTypeRegularFn1,
+        }
+      }
       class Test {
-        @Action(Action1, actionType2, Action3, Action4)
+        @Action(
+          Action1,
+          actionType2,
+          Action3,
+          Action4,
+          actionCreatorReduxActions1,
+          actionCreatorReduxActionsFailsDueToMissingArguments,
+          actionCreatorArrowFn1,
+          (ActionES5Class as any) as IActionConstructor,
+          actionCreatorRegularFn1,
+        )
         public [prop]() {} // tslint:disable-line no-empty
       }
-      const metadataExpected = [Action1.type, actionType2, Action3.type, action4Type]
+      const metadataExpected = [
+        Action1.type,
+        actionType2,
+        Action3.type,
+        action4Type,
+        actionTypeReduxActions1,
+        actionTypeReduxActionsFailsDueToMissingArguments,
+        actionTypeArrowFn1,
+        actionTypeES5Class,
+        actionTypeRegularFn1,
+      ]
       const metadataFromClass = Reflect.getMetadata(METADATA_KEY_ACTION, Test.prototype, prop)
       expect(metadataFromClass).toEqual(metadataExpected)
       const metadataFromInstance = Reflect.getMetadata(METADATA_KEY_ACTION, new Test(), prop)

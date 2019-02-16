@@ -4,11 +4,41 @@ import { ActionTypeUnclearError, MetadataActionPropsMissingError } from './error
 export interface IAction {
   type: string
 }
+export type IActionCreator = (...args: any[]) => IAction
 export type IActionConstructor = new (...args: any[]) => IAction
-const typeGuardActionHasOwnType = (action: IAction | IActionConstructor): action is IAction =>
+const isArrowFunction = (action: IActionConstructor | IActionCreator): action is IActionCreator => !action.prototype
+const isES6Class = (action: IActionConstructor | IActionCreator): boolean => action.toString().indexOf('class') === 0
+const typeGuardActionHasOwnType = (action: IAction | IActionConstructor | IActionCreator): action is IAction =>
   typeof (action as IAction).type === 'string' // tslint:disable-line strict-type-predicates
-const typeGuardActionIsString = (action: IAction | IActionConstructor | string): action is string =>
+const typeGuardActionIsString = (action: IAction | IActionConstructor | IActionCreator | string): action is string =>
   typeof action === 'string'
+
+const getActionType = (action: IAction | IActionConstructor | IActionCreator | string): string => {
+  if (typeGuardActionIsString(action)) {
+    return action
+  }
+  if (typeGuardActionHasOwnType(action)) {
+    return action.type
+  }
+  // ES6 classes can not be invoked without `new` so we handle them separately
+  if (isES6Class(action)) {
+    const classInstance = new (action as IActionConstructor)()
+    return classInstance.type
+  }
+  try {
+    if (isArrowFunction(action)) {
+      const actionCreatorArrowFnRes = (action as IActionCreator)()
+      return actionCreatorArrowFnRes.type
+    }
+    const classInstance = new (action as IActionConstructor)()
+    return classInstance.type
+  } catch {
+    // Fall back in case action construction failed due to missing arguments
+    // Should work perfectly for redux-actions
+    // https://github.com/redux-utilities/redux-actions/blob/master/src/createAction.js#L44
+    return action.toString()
+  }
+}
 
 const checkParamTypeIsAction = (paramType: any): boolean => {
   try {
@@ -34,12 +64,7 @@ const ActionReflect: MethodDecorator = (target, propertyKey) => {
     throw new ActionTypeUnclearError(propertyKey as string)
   }
   const action: IAction | IActionConstructor = actionCandidate
-  let actionType: string
-  if (typeGuardActionHasOwnType(action)) {
-    actionType = action.type
-  } else {
-    actionType = new action().type
-  }
+  const actionType = getActionType(action)
   Reflect.defineMetadata(METADATA_KEY_ACTION, [actionType], target, propertyKey)
 }
 
@@ -52,7 +77,7 @@ const typeGuardActionArgsAreDecoratorProps = (
   (args[2] as PropertyDescriptor).configurable !== undefined &&
   (args[2] as PropertyDescriptor).enumerable !== undefined
 type ActionArgsDecorator = [object, string | symbol, PropertyDescriptor]
-type ActionArgsDecoratorFactory = Array<IAction | IActionConstructor | string>
+type ActionArgsDecoratorFactory = Array<IAction | IActionConstructor | IActionCreator | string>
 
 export function Action(...args: ActionArgsDecoratorFactory): MethodDecorator
 export function Action(
@@ -70,15 +95,7 @@ export function Action(
     if (!args.length) {
       throw new MetadataActionPropsMissingError(propertyKey as string)
     }
-    const actionTypes: string[] = args.map((action) => {
-      if (typeGuardActionIsString(action)) {
-        return action
-      }
-      if (typeGuardActionHasOwnType(action)) {
-        return action.type
-      }
-      return new action().type
-    })
+    const actionTypes: string[] = args.map(getActionType)
     Reflect.defineMetadata(METADATA_KEY_ACTION, actionTypes, target, propertyKey)
   }
   return decorator

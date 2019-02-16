@@ -13,11 +13,10 @@ Consider using it with [flux-action-class](https://github.com/keenondrums/flux-a
   - [Angular](#angular)
   - [React](#react)
 - [Quick start](#quick-start)
-  - [Recommended](#recommended)
+  - [Recommended (with flux-action-class)](#recommended-with-flux-action-class)
   - [Classic NGRX actions](#classic-ngrx-actions)
+  - [With redux-actions](#with-redux-actions)
   - [Old school: action type constants](#old-school-action-type-constants)
-  - [JavaScript with flux-action-class](#javascript-with-flux-action-class)
-  - [Old school: JavaScript](#old-school-javascript)
 - [Integration with `immer`](#integration-with-immer)
 - [In depth](#in-depth)
   - [When we can we omit list of actions for `@Action`?](#when-we-can-we-omit-list-of-actions-for-action)
@@ -41,7 +40,7 @@ Consider using it with [flux-action-class](https://github.com/keenondrums/flux-a
    "emitDecoratorMetadata": true,
    ```
 
-1. If you use JavaScript configure your babel to support decorators
+1. If you use JavaScript configure your babel to support decorators and class properties
 
 ### React
 
@@ -60,11 +59,11 @@ Consider using it with [flux-action-class](https://github.com/keenondrums/flux-a
    "emitDecoratorMetadata": true,
    ```
 
-1. If you use JavaScript configure your babel to support decorators
+1. If you use JavaScript configure your babel to support decorators and class properties
 
 ## Quick start
 
-### Recommended
+### Recommended (with [flux-action-class](https://github.com/keenondrums/flux-action-class))
 
 ```ts
 import { ActionStandard } from 'flux-action-class'
@@ -99,6 +98,44 @@ class ReducerCat extends ReducerClass<IReducerCatState> {
 
 const reducer = ReducerCat.create()
 ```
+
+<details>
+<summary>JavaScript version</summary>
+
+```js
+import { ActionStandard } from 'flux-action-class'
+import { Action, ReducerClass } from 'reducer-class'
+
+class ActionCatEat extends ActionStandard {}
+class ActionCatPlay extends ActionStandard {}
+class ActionCatBeAwesome extends ActionStandard {}
+
+class ReducerCat extends ReducerClass {
+  initialState = {
+    energy: 100,
+  }
+
+  @Action(ActionCatEat)
+  addEnergy(state, action) {
+    return {
+      energy: state.energy + action.payload,
+    }
+  }
+
+  @Action(ActionCatPlay, ActionCatBeAwesome)
+  wasteEnegry(state, action) {
+    return {
+      energy: state.energy - action.payload,
+    }
+  }
+}
+
+const reducer = ReducerCat.create()
+```
+
+> We can not use `Action` without arguments in JavaScript because there's no compiler which provides us with metadata for type reflection.
+
+</details>
 
 ### Classic NGRX actions
 
@@ -144,6 +181,132 @@ class ReducerCat extends ReducerClass<IReducerCatState> {
 const reducer = ReducerCat.create()
 ```
 
+<details>
+<summary>JavaScript version</summary>
+
+```js
+import { Action, ReducerClass } from 'reducer-class'
+
+class ActionCatEat {
+  type = 'ActionCatEat'
+  constructor(payload) {
+    this.payload = payload
+  }
+}
+class ActionCatPlay {
+  type = 'ActionCatPlay'
+  constructor(payload) {
+    this.payload = payload
+  }
+}
+class ActionCatBeAwesome {
+  type = 'ActionCatBeAwesome'
+  constructor(payload) {
+    this.payload = payload
+  }
+}
+
+class ReducerCat extends ReducerClass {
+  initialState = {
+    energy: 100,
+  }
+
+  @Action(ActionCatEat)
+  addEnergy(state, action) {
+    return {
+      energy: state.energy + action.payload,
+    }
+  }
+
+  @Action(ActionCatPlay, ActionCatBeAwesome)
+  wasteEnegry(state, action) {
+    return {
+      energy: state.energy - action.payload,
+    }
+  }
+}
+
+const reducer = ReducerCat.create()
+```
+
+> We can not use `Action` without arguments in JavaScript because there's no compiler which provides us with metadata for type reflection.
+
+</details>
+
+### With [redux-actions](https://github.com/redux-utilities/redux-actions)
+
+```ts
+import { Action, ReducerClass } from 'reducer-class'
+import { createAction } from 'redux-actions'
+
+const actionCatEat = createAction('actionTypeCatEat')
+const actionCatPlay = createAction('actionTypeCatPlay')
+const actionCatBeAwesome = createAction('actionTypeCatBeAwesome')
+
+interface IReducerCatState {
+  energy: number
+}
+class ReducerCat extends ReducerClass<IReducerCatState> {
+  initialState = {
+    energy: 100,
+  }
+
+  @Action(actionCatEat)
+  addEnergy(state: IReducerCatState, action: { payload: number }) {
+    return {
+      energy: state.energy + action.payload,
+    }
+  }
+
+  @Action(actionCatPlay, actionCatBeAwesome)
+  wasteEnegry(state: IReducerCatState, action: { payload: number }) {
+    return {
+      energy: state.energy - action.payload,
+    }
+  }
+}
+
+const reducer = ReducerCat.create()
+```
+
+> You might have noticed that we always pass actions to `Action` in this version. It's because we no longer use classes for our actions and TypeScript can not provide type metadata.
+
+<details>
+<summary>JavaScript version</summary>
+
+```js
+import { Action, ReducerClass } from 'reducer-class'
+import { createAction } from 'redux-actions'
+
+const actionCatEat = createAction('actionTypeCatEat')
+const actionCatPlay = createAction('actionTypeCatPlay')
+const actionCatBeAwesome = createAction('actionTypeCatBeAwesome')
+
+class ReducerCat extends ReducerClass {
+  initialState = {
+    energy: 100,
+  }
+
+  @Action(actionCatEat)
+  addEnergy(state, action: { payload }) {
+    return {
+      energy: state.energy + action.payload,
+    }
+  }
+
+  @Action(actionCatPlay, actionCatBeAwesome)
+  wasteEnegry(state, action: { payload }) {
+    return {
+      energy: state.energy - action.payload,
+    }
+  }
+}
+
+const reducer = ReducerCat.create()
+```
+
+</details>
+
 ### Old school: action type constants
 
 ```ts
@@ -181,44 +344,8 @@ const reducer = ReducerCat.create()
 
 > You might have noticed that we always pass actions to `Action` in this version. It's because we no longer use classes for our actions and TypeScript can not provide type metadata.
 
-### JavaScript with flux-action-class
-
-```js
-import { ActionStandard } from 'flux-action-class'
-import { Action, ReducerClass } from 'reducer-class'
-
-class ActionCatEat {}
-class ActionCatPlay {}
-class ActionCatBeAwesome {}
-
-class ReducerCat extends ReducerClass {
-  initialState = {
-    energy: 100,
-  }
-
-  @Action(ActionCatEat)
-  addEnergy(state, action) {
-    return {
-      energy: state.energy + action.payload,
-    }
-  }
-
-  @Action(ActionCatPlay, ActionCatBeAwesome)
-  wasteEnegry(state, action) {
-    return {
-      energy: state.energy - action.payload,
-    }
-  }
-}
-
-const reducer = ReducerCat.create()
-```
-
-> We can not use `Action` without arguments in JavaScript because there's no compiler which provides us with metadata for type reflection.
-
-> Be aware, you have to configure [babel](https://babeljs.io/) to provide you with decorator syntax.
-
-### Old school: JavaScript
+<details>
+<summary>JavaScript version</summary>
 
 ```js
 import { Action, ReducerClass } from 'reducer-class'
@@ -249,6 +376,8 @@ class ReducerCat {
 
 const reducer = ReducerCat.create()
 ```
+
+</details>
 
 ## Integration with `immer`
 
@@ -348,3 +477,4 @@ console.log(res2) // logs 135: 130 - previous value, 5 is added by addEnergy
 1. `@Action` can be used to automatically reflect a corresponding action from the type.
 1. `ngrx-actions` doesn't allow matching several reducers to the same action, while `reducer-class` allows you to do that and merges them for you.
 1. `reducer-class` is built with both worlds, Angular and Redux, in mind. It means equal support for all of them!
+1. `reducer-class` works with function-based action creators and supports [redux-actions](https://github.com/redux-utilities/redux-actions) out-of-the-box.
