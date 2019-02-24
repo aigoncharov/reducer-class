@@ -431,7 +431,7 @@ You can omit list of actions for `@Action` if you want to run a reducer function
 
 ### Running several reducers for the same action
 
-If you have declare several reducer functions corresponding to the same action `reducer-class` runs all of them serially. It uses its own implementation of (reduce-reducers)[https://github.com/redux-utilities/reduce-reducers]. The order is defined by [Object.keys](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys).
+If you have declare several reducer functions corresponding to the same action `reducer-class` runs all of them serially. It uses its own implementation of [reduce-reducers](https://github.com/redux-utilities/reduce-reducers). The order is defined by [Object.keys](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys).
 
 ```ts
 import { ActionStandard } from 'flux-action-class'
