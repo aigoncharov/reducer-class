@@ -25,6 +25,7 @@ describe(ReducerClass.name, () => {
       @Action
       public test2(state: Immutable<ITestState>, draft: ITestState, action: Action2) {
         draft.sum += action.payload
+        return undefined
       }
     }
 

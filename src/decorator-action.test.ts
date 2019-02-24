@@ -8,7 +8,7 @@ import { METADATA_KEY_ACTION } from './constants'
 import { Action, IActionConstructor } from './decorator-action'
 import { ActionTypeUnclearError, MetadataActionPropsMissingError } from './errors'
 
-describe('Action', () => {
+describe('@Action', () => {
   describe('with reflection', () => {
     test('sets metadata', () => {
       const prop1 = 'test1'

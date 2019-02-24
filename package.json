@@ -31,7 +31,7 @@
   },
   "homepage": "https://github.com/keenondrums/reducer-class#readme",
   "devDependencies": {
-    "@types/jest": "^23.3.13",
+    "@types/jest": "^23.3.14",
     "@types/redux-actions": "^2.3.2",
     "coveralls": "^3.0.3",
     "doctoc": "^1.4.0",

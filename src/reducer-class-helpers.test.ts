@@ -19,24 +19,28 @@ describe(ReducerClassHelpers.name, () => {
         public initialState = undefined
 
         @Action(Action1)
-        public reducerPure() {
+        public reducerPure(): undefined {
           return undefined
         }
 
         @Action(Action2)
-        public reducerImmer(state: undefined, draft: undefined, action: any) {} // tslint:disable-line no-empty
+        public reducerImmer(state: undefined, draft: undefined, action: any) {
+          return undefined
+        }
       }
       const test = new Test()
       const keys = ReducerClassHelpers.getClassInstanceMethodNames(test)
       const spyGetMetadata = jest.spyOn(Reflect, 'getMetadata')
       const mockAddImmerIfNeededResPure = Symbol()
       const mockAddImmerIfNeededResImmer = Symbol()
-      jest.spyOn(ReducerClassHelpers, 'addImmerIfNeeded').mockImplementation((reducer: any) => {
-        if (ReducerClassHelpers.typeGuardReducerPure(reducer)) {
-          return mockAddImmerIfNeededResPure
-        }
-        return mockAddImmerIfNeededResImmer
-      })
+      jest.spyOn(ReducerClassHelpers, 'addImmerIfNeeded').mockImplementation(
+        (reducer: any): any => {
+          if (ReducerClassHelpers.typeGuardReducerPure(reducer)) {
+            return mockAddImmerIfNeededResPure
+          }
+          return mockAddImmerIfNeededResImmer
+        },
+      )
       const methodsWithActionTypes = ReducerClassHelpers.getReducerClassMethodsWthActionTypes(test as any, keys)
       expect(spyGetMetadata).toBeCalledTimes(2)
       expect(methodsWithActionTypes.length).toBe(2)
@@ -49,7 +53,7 @@ describe(ReducerClassHelpers.name, () => {
     test('throws if no actions passed', () => {
       class Test extends ReducerClass<undefined> {
         public initialState = undefined
-        public test() {
+        public test(): undefined {
           return
         }
       }
@@ -98,9 +102,9 @@ describe(ReducerClassHelpers.name, () => {
       }
       const reducerMap = ReducerClassHelpers.getReducerMap([item1, item2, item3, item4])
       expect(Object.keys(reducerMap)).toEqual([actionType1, actionType2])
-      const res1 = reducerMap[actionType1](0, null)
+      const res1 = reducerMap[actionType1](0, { type: '' })
       expect(res1).toBe(3)
-      const res2 = reducerMap[actionType2](0, null)
+      const res2 = reducerMap[actionType2](0, { type: '' })
       expect(res2).toBe(7)
     })
   })
@@ -118,10 +122,11 @@ describe(ReducerClassHelpers.name, () => {
       const resSum = 42
       const testFn = (state: ITest, draft: ITest, action: any) => {
         draft.sum = resSum
+        return undefined
       }
       const resFn = ReducerClassHelpers.addImmerIfNeeded(testFn)
       expect(resFn).not.toBe(testFn)
-      const { sum } = resFn({ sum: 0 }, null)
+      const { sum } = resFn({ sum: 0 }, { type: '' })
       expect(sum).toBe(resSum)
     })
   })

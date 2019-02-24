@@ -18,9 +18,14 @@ Consider using it with [flux-action-class](https://github.com/keenondrums/flux-a
   - [With redux-actions](#with-redux-actions)
   - [Old school: action type constants](#old-school-action-type-constants)
 - [Integration with `immer`](#integration-with-immer)
+- [Reusing reducers](#reusing-reducers)
+  - [Step 1](#step-1)
+  - [Step 2](#step-2)
+  - [How can I make shared reducer's logic dynamic?](#how-can-i-make-shared-reducers-logic-dynamic)
 - [In depth](#in-depth)
   - [When can we omit list of actions for `@Action`?](#when-can-we-omit-list-of-actions-for-action)
   - [Running several reducers for the same action](#running-several-reducers-for-the-same-action)
+  - [How @Extend works?](#how-extend-works)
 - [How does it compare to ngrx-actions?](#how-does-it-compare-to-ngrx-actions)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -413,15 +418,304 @@ class ReducerCat extends ReducerClass<IReducerCatState> {
   @Action(ActionCatPlay, ActionCatBeAwesome)
   wasteEnegry(state: Immutable<IReducerCatState>, draft: IReducerCatState, action: ActionCatPlay | ActionCatBeAwesome) {
     draft.energy -= action.payload
+    // Unfortunatelly, we can not omit `return` statement here due to how TypeScript handles `void`
+    // https://github.com/Microsoft/TypeScript/wiki/FAQ#why-are-functions-returning-non-void-assignable-to-function-returning-void
+    return undefined
   }
 }
 
 const reducer = ReducerCat.create()
 ```
 
+> As you can see we still return `undefined` from the reducer even though we use [immer](https://github.com/mweststrate/immer) and mutate our draft. Unfortunately, we can not omit `return` statement here due to [how TypeScript handles `void`](https://github.com/Microsoft/TypeScript/wiki/FAQ#why-are-functions-returning-non-void-assignable-to-function-returning-void). We can not even write `return` (withour `undefined`), because TypeScript then presumes the method returns `void`.
+
 > You might have noticed a new import - `Immutable`. It's just a cool name for [DeepReadonly type](https://github.com/gcanti/typelevel-ts#deepreadonly). You don't have to use it. The example above would work just fine if used just `IReducerCatState`. Yet it's recommended to wrap it with `Immutable` to ensure that you never mutate it.
 
 > Actually it makes total sense to use `Immutable` for state of regular reducers as well to make sure you never modify state directly.
+
+## Reusing reducers
+
+So what if we want to share some logic between reducers?
+
+### Step 1
+
+Create a class with shared logic.
+
+```ts
+import { Action, ReducerClassMixin } from 'reducer-class'
+
+interface IHungryState {
+  hungry: boolean
+}
+export class ReducerHungry<T extends IHungryState> extends ReducerClassMixin<T> {
+  @Action(ActionHungry)
+  hugry(state: T) {
+    return {
+      ...state,
+      hungry: true,
+    }
+  }
+
+  @Action(ActionFull)
+  full(state: T) {
+    return {
+      ...state,
+      hungry: false,
+    }
+  }
+}
+```
+
+> You might have noticed that made this class generic. We have to do that because we do not know what actual state we going to extend, we can only put a constraint on it to make sure it satisfies the structure we need. In other words, if we used `IHungryState` directly and returned `{ hungry: true }` (not `{ ...state, hungry: true }`) from `hungry` compiler wouldn't complain.
+
+> You don't have to use `ReducerClassMixin` class. It's nothing but a convenience wrapper to make sure your class carries an index signature for type-safety. Alternatively you can use `IReducerClassConstraint` interface and `ReducerClassMethod` type.
+
+<details>
+<summary>How to use `IReducerClassConstraint` interface and `ReducerClassMethod` type instead of `ReducerClassMixin` class</summary>
+
+```ts
+import { Action, IReducerClassConstraint, ReducerClassMethod } from 'reducer-class'
+
+interface IHungryState {
+  hungry: boolean
+}
+export class ReducerHungry<T extends IHungryState> implements IReducerClassConstraint<T> {
+  [methodName: string]: ReducerClassMethod<T>
+
+  @Action(ActionHungry)
+  hugry(state: T) {
+    return {
+      ...state,
+      hungry: true,
+    }
+  }
+
+  @Action(ActionFull)
+  full(state: T) {
+    return {
+      ...state,
+      hungry: false,
+    }
+  }
+}
+```
+
+</details>
+
+<details>
+<summary>JavaScript version</summary>
+
+```js
+import { Action } from 'reducer-class'
+
+export class ReducerHungry {
+  @Action(ActionHungry)
+  hugry(state) {
+    return {
+      ...state,
+      hungry: true,
+    }
+  }
+
+  @Action(ActionFull)
+  full(state) {
+    return {
+      ...state,
+      hungry: false,
+    }
+  }
+}
+```
+
+</details>
+
+### Step 2
+
+Use @Extend decorator.
+
+```ts
+import { Action, Extend, ReducerClass } from 'reducer-class'
+
+import { ReducerHungry } from 'shared'
+
+interface ICatState {
+  hugry: boolean
+  enegry: number
+}
+@Extend<ICatState>(ReducerHungry)
+class CatReducer extends ReducerClass<ICatState> {
+  initialState = {
+    energy: 100,
+  }
+
+  @Action
+  addEnergy(state: ICatState, action: ActionCatEat) {
+    return {
+      energy: state.energy + action.payload,
+    }
+  }
+
+  @Action(ActionCatPlay, ActionCatBeAwesome)
+  wasteEnegry(state: ICatState, action: ActionCatPlay | ActionCatBeAwesome) {
+    return {
+      energy: state.energy - action.payload,
+    }
+  }
+}
+
+const reducer = ReducerCat.create()
+```
+
+> @Extend can accept as many arguments as you want.
+
+Now our cat reducer uses `wasteEnegry` to handle actions `ActionCatPlay`, `ActionCatBeAwesome`, `addEnergy` to handle `ActionCatEat` and inherits `hugry` and `full` methods to handle `ActionHungry` and `ActionFull` from `ReducerHungry`.
+
+<details>
+<summary>JavaScript version</summary>
+
+```js
+import { Action, Extend, ReducerClass } from 'reducer-class'
+
+import { ReducerHungry } from 'shared'
+
+@Extend(ReducerHungry)
+class CatReducer extends ReducerClass {
+  initialState = {
+    energy: 100,
+  }
+
+  @Action(ActionCatEat)
+  addEnergy(state, action) {
+    return {
+      energy: state.energy + action.payload,
+    }
+  }
+
+  @Action(ActionCatPlay, ActionCatBeAwesome)
+  wasteEnegry(state, action) {
+    return {
+      energy: state.energy - action.payload,
+    }
+  }
+}
+
+const reducer = ReducerCat.create()
+```
+
+</details>
+
+### How can I make shared reducer's logic dynamic?
+
+You can use class factories.
+
+```ts
+import { Action, Extend, ReducerClass, ReducerClassMixin } from 'reducer-class'
+
+interface IHungryState {
+  hungry: boolean
+}
+export const makeReducerHungry = <T extends IHungryState>(actionHungry, actionFull) => {
+  class Extender1 extends ReducerClassMixin<T> {
+    @Action(actionHungry)
+    hugry(state: T) {
+      return {
+        ...state,
+        hungry: true,
+      }
+    }
+
+    @Action(actionFull)
+    full(state: T) {
+      return {
+        ...state,
+        hungry: false,
+      }
+    }
+  }
+  return Extender1
+}
+
+interface ICatState {
+  hugry: boolean
+  enegry: number
+}
+@Extend<ICatState>(makeReducerHungry(ActionCatPlay, ActionCatEat))
+class CatReducer extends ReducerClass<ICatState> {
+  initialState = {
+    energy: 100,
+  }
+
+  @Action
+  addEnergy(state: ICatState, action: ActionCatEat) {
+    return {
+      energy: state.energy + action.payload,
+    }
+  }
+
+  @Action
+  wasteEnegry(state: ICatState, action: ActionCatPlay) {
+    return {
+      energy: state.energy - action.payload,
+    }
+  }
+}
+
+const reducer = ReducerCat.create()
+```
+
+<details>
+<summary>JavaScript version</summary>
+
+```js
+import { Action, Extend, ReducerClass } from 'reducer-class'
+
+interface IHungryState {
+  hungry: boolean;
+}
+export const makeReducerHungry = (actionHungry, actionFull) =>
+  class {
+    @Action(actionHungry)
+    hugry(state) {
+      return {
+        ...state,
+        hungry: true,
+      }
+    }
+
+    @Action(actionFull)
+    full(state) {
+      return {
+        ...state,
+        hungry: false,
+      }
+    }
+  }
+
+@Extend(makeReducerHungry(ActionCatPlay, ActionCatEat))
+class CatReducer extends ReducerClass {
+  initialState = {
+    energy: 100,
+  }
+
+  @Action(ActionCatEat)
+  addEnergy(state, action) {
+    return {
+      energy: state.energy + action.payload,
+    }
+  }
+
+  @Action(ActionCatPlay)
+  wasteEnegry(state, action) {
+    return {
+      energy: state.energy - action.payload,
+    }
+  }
+}
+
+const reducer = ReducerCat.create()
+```
+
+</details>
 
 ## In depth
 
@@ -470,6 +764,10 @@ console.log(res1.energy) // logs 130: 100 - initial value, 10 is added by addEne
 const res2 = reducer(res1, new ActionCatEat(5))
 console.log(res2) // logs 135: 130 - previous value, 5 is added by addEnergy
 ```
+
+### How @Extend works?
+
+It iterates over its arguments and copies their methods and corresponding metadata to a prototype of our target reducer class.
 
 ## How does it compare to [ngrx-actions](https://github.com/amcdnl/ngrx-actions)?
 
