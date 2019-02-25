@@ -23,16 +23,16 @@ export interface IReducerClassMethodWithActionType<T> {
 }
 
 export class ReducerClassHelpers {
-  public static typeGuardReducerPure<T>(method: ReducerClassMethod<T>): method is ReducerPure<T> {
+  public typeGuardReducerPure<T>(method: ReducerClassMethod<T>): method is ReducerPure<T> {
     return method.length !== 3
   }
-  public static addImmerIfNeeded<T>(method: ReducerClassMethod<T>): ReducerPure<T> {
+  public addImmerIfNeeded<T>(method: ReducerClassMethod<T>): ReducerPure<T> {
     if (this.typeGuardReducerPure<T>(method)) {
       return method
     }
     return (state: T, action: any): T => produce<T>(state, (draft) => method(state, draft as T, action))
   }
-  public static getReducerClassMethodsWthActionTypes<T>(
+  public getReducerClassMethodsWthActionTypes<T>(
     instance: IReducerClassConstraint<T>,
     keys: Array<keyof typeof instance>,
   ) {
@@ -52,10 +52,10 @@ export class ReducerClassHelpers {
       return accum
     }, [])
   }
-  public static mergeReducers<T>(...reducers: Array<ReducerPure<T>>): ReducerPure<T> {
+  public mergeReducers<T>(...reducers: Array<ReducerPure<T>>): ReducerPure<T> {
     return (state, action) => reducers.reduce<T>((resState, reducer) => reducer(resState, action), state)
   }
-  public static getReducerMap<T>(data: Array<IReducerClassMethodWithActionType<T>>) {
+  public getReducerMap<T>(data: Array<IReducerClassMethodWithActionType<T>>) {
     return data.reduce<IReducerMap<T>>((accum, { method, actionType }) => {
       let methodToAdd = method
       if (accum[actionType]) {
@@ -65,7 +65,7 @@ export class ReducerClassHelpers {
       return accum
     }, {})
   }
-  public static getClassInstanceMethodNames(obj: object) {
+  public getClassInstanceMethodNames(obj: object) {
     const proto = Object.getPrototypeOf(obj)
     return Object.getOwnPropertyNames(proto).filter((name) => name !== 'constructor')
   }

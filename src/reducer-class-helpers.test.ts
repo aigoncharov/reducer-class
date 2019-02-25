@@ -9,9 +9,11 @@ import { ReducerClass } from './reducer-class'
 import { IReducerClassMethodWithActionType, ReducerClassHelpers } from './reducer-class-helpers'
 
 describe(ReducerClassHelpers.name, () => {
+  const reducerClassHelpers = new ReducerClassHelpers()
+
   afterEach(() => jest.restoreAllMocks())
 
-  describe(ReducerClassHelpers.getReducerClassMethodsWthActionTypes.name, () => {
+  describe(ReducerClassHelpers.prototype.getReducerClassMethodsWthActionTypes.name, () => {
     test('returns action types from metadata', () => {
       class Action1 extends ActionStandard {}
       class Action2 extends ActionStandard {}
@@ -29,19 +31,19 @@ describe(ReducerClassHelpers.name, () => {
         }
       }
       const test = new Test()
-      const keys = ReducerClassHelpers.getClassInstanceMethodNames(test)
+      const keys = reducerClassHelpers.getClassInstanceMethodNames(test)
       const spyGetMetadata = jest.spyOn(Reflect, 'getMetadata')
       const mockAddImmerIfNeededResPure = Symbol()
       const mockAddImmerIfNeededResImmer = Symbol()
-      jest.spyOn(ReducerClassHelpers, 'addImmerIfNeeded').mockImplementation(
+      jest.spyOn(ReducerClassHelpers.prototype, 'addImmerIfNeeded').mockImplementation(
         (reducer: any): any => {
-          if (ReducerClassHelpers.typeGuardReducerPure(reducer)) {
+          if (reducerClassHelpers.typeGuardReducerPure(reducer)) {
             return mockAddImmerIfNeededResPure
           }
           return mockAddImmerIfNeededResImmer
         },
       )
-      const methodsWithActionTypes = ReducerClassHelpers.getReducerClassMethodsWthActionTypes(test as any, keys)
+      const methodsWithActionTypes = reducerClassHelpers.getReducerClassMethodsWthActionTypes(test as any, keys)
       expect(spyGetMetadata).toBeCalledTimes(2)
       expect(methodsWithActionTypes.length).toBe(2)
       const [methodWithActionTypes1, methodWithActionTypes2] = methodsWithActionTypes
@@ -58,14 +60,14 @@ describe(ReducerClassHelpers.name, () => {
         }
       }
       const test = new Test()
-      const keys = ReducerClassHelpers.getClassInstanceMethodNames(test)
-      expect(() => ReducerClassHelpers.getReducerClassMethodsWthActionTypes(test as any, keys)).toThrow(
+      const keys = reducerClassHelpers.getClassInstanceMethodNames(test)
+      expect(() => reducerClassHelpers.getReducerClassMethodsWthActionTypes(test as any, keys)).toThrow(
         MetadataActionMissingError,
       )
     })
   })
 
-  describe(ReducerClassHelpers.getReducerMap.name, () => {
+  describe(ReducerClassHelpers.prototype.getReducerMap.name, () => {
     test('returns a reducer map', () => {
       const item1: IReducerClassMethodWithActionType<any> = {
         actionType: 'test1',
@@ -75,7 +77,7 @@ describe(ReducerClassHelpers.name, () => {
         actionType: 'test2',
         method: (state: any, action: any) => 42,
       }
-      const reducerMap = ReducerClassHelpers.getReducerMap([item1, item2])
+      const reducerMap = reducerClassHelpers.getReducerMap([item1, item2])
       expect(reducerMap).toEqual({
         [item1.actionType]: item1.method,
         [item2.actionType]: item2.method,
@@ -100,7 +102,7 @@ describe(ReducerClassHelpers.name, () => {
         actionType: actionType2,
         method: (state: number, action: any) => state + 4,
       }
-      const reducerMap = ReducerClassHelpers.getReducerMap([item1, item2, item3, item4])
+      const reducerMap = reducerClassHelpers.getReducerMap([item1, item2, item3, item4])
       expect(Object.keys(reducerMap)).toEqual([actionType1, actionType2])
       const res1 = reducerMap[actionType1](0, { type: '' })
       expect(res1).toBe(3)
@@ -109,10 +111,10 @@ describe(ReducerClassHelpers.name, () => {
     })
   })
 
-  describe(ReducerClassHelpers.addImmerIfNeeded.name, () => {
+  describe(ReducerClassHelpers.prototype.addImmerIfNeeded.name, () => {
     test('returns original function if it passes the typeguard', () => {
       const testFn = () => undefined
-      const resFn = ReducerClassHelpers.addImmerIfNeeded(testFn)
+      const resFn = reducerClassHelpers.addImmerIfNeeded(testFn)
       expect(resFn).toBe(testFn)
     })
     test("returns wrapped function if it doesn't pass the typeguard", () => {
@@ -124,7 +126,7 @@ describe(ReducerClassHelpers.name, () => {
         draft.sum = resSum
         return undefined
       }
-      const resFn = ReducerClassHelpers.addImmerIfNeeded(testFn)
+      const resFn = reducerClassHelpers.addImmerIfNeeded(testFn)
       expect(resFn).not.toBe(testFn)
       const { sum } = resFn({ sum: 0 }, { type: '' })
       expect(sum).toBe(resSum)
