@@ -25,7 +25,7 @@ Consider using it with [flux-action-class](https://github.com/keenondrums/flux-a
 - [In depth](#in-depth)
   - [When can we omit list of actions for `@Action`?](#when-can-we-omit-list-of-actions-for-action)
   - [Running several reducers for the same action](#running-several-reducers-for-the-same-action)
-  - [How @Extend works?](#how-extend-works)
+  - [How does @Extend work?](#how-does-extend-work)
 - [How does it compare to ngrx-actions?](#how-does-it-compare-to-ngrx-actions)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -765,7 +765,7 @@ const res2 = reducer(res1, new ActionCatEat(5))
 console.log(res2) // logs 135: 130 - previous value, 5 is added by addEnergy
 ```
 
-### How @Extend works?
+### How does @Extend work?
 
 It iterates over its arguments and copies their methods and corresponding metadata to a prototype of our target reducer class.
 
