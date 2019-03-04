@@ -52,6 +52,45 @@ describe(ReducerClassHelpers.name, () => {
       expect(methodWithActionTypes2.actionType).toBe(Action2.type)
       expect(methodWithActionTypes2.method).toBe(mockAddImmerIfNeededResImmer)
     })
+    test('returns action types for the whole inheritance chain', () => {
+      class Action1 extends ActionStandard {}
+      class Action2 extends ActionStandard {}
+      class Test extends ReducerClass<undefined> {
+        public initialState = undefined
+
+        @Action(Action1)
+        public reducerPure(): undefined {
+          return undefined
+        }
+      }
+      class TestChild extends Test {
+        @Action(Action2)
+        public reducerImmer(state: undefined, draft: undefined, action: any) {
+          return undefined
+        }
+      }
+      const test = new TestChild()
+      const keys = reducerClassHelpers.getClassInstanceMethodNames(test)
+      const spyGetMetadata = jest.spyOn(Reflect, 'getMetadata')
+      const mockAddImmerIfNeededResPure = Symbol()
+      const mockAddImmerIfNeededResImmer = Symbol()
+      jest.spyOn(ReducerClassHelpers.prototype, 'addImmerIfNeeded').mockImplementation(
+        (reducer: any): any => {
+          if (reducerClassHelpers.typeGuardReducerPure(reducer)) {
+            return mockAddImmerIfNeededResPure
+          }
+          return mockAddImmerIfNeededResImmer
+        },
+      )
+      const methodsWithActionTypes = reducerClassHelpers.getReducerClassMethodsWthActionTypes(test as any, keys)
+      expect(spyGetMetadata).toBeCalledTimes(2)
+      expect(methodsWithActionTypes.length).toBe(2)
+      const [methodWithActionTypes1, methodWithActionTypes2] = methodsWithActionTypes
+      expect(methodWithActionTypes1.actionType).toBe(Action1.type)
+      expect(methodWithActionTypes1.method).toBe(mockAddImmerIfNeededResPure)
+      expect(methodWithActionTypes2.actionType).toBe(Action2.type)
+      expect(methodWithActionTypes2.method).toBe(mockAddImmerIfNeededResImmer)
+    })
     test('throws if no actions passed', () => {
       class Test extends ReducerClass<undefined> {
         public initialState = undefined
@@ -64,6 +103,25 @@ describe(ReducerClassHelpers.name, () => {
       expect(() => reducerClassHelpers.getReducerClassMethodsWthActionTypes(test as any, keys)).toThrow(
         MetadataActionMissingError,
       )
+    })
+    test("doesn't throw on methods prefixed with '_' if no actions passed", () => {
+      class Test extends ReducerClass<undefined> {
+        public initialState = undefined
+        public _test3() {
+          return undefined
+        }
+        protected _test2() {
+          return undefined
+        }
+
+        // @ts-ignore
+        private _test() {
+          return undefined
+        }
+      }
+      const test = new Test()
+      const keys = reducerClassHelpers.getClassInstanceMethodNames(test)
+      expect(keys).toEqual([])
     })
   })
 

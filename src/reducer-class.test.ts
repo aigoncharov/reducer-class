@@ -47,4 +47,38 @@ describe(ReducerClass.name, () => {
       sum: 20,
     })
   })
+  test('can be inherited', () => {
+    interface ITestState {
+      sum: number
+    }
+    class Action1 extends ActionStandard {}
+    class Test extends ReducerClass<ITestState> {
+      public initialState = { sum: 10 }
+
+      @Action
+      public test1(state: ITestState, action: Action1) {
+        return this._sum(state)
+      }
+
+      protected _sum(state: ITestState): ITestState {
+        return {
+          sum: state.sum + 1,
+        }
+      }
+    }
+
+    class TestChild extends Test {
+      protected _sum(state: ITestState): ITestState {
+        return {
+          sum: state.sum + 100,
+        }
+      }
+    }
+
+    const testReducer = TestChild.create()
+    const res11 = testReducer(undefined, new Action1())
+    expect(res11).toEqual({
+      sum: 110,
+    })
+  })
 })

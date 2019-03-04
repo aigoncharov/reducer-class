@@ -1,8 +1,9 @@
 import { produce } from 'immer'
 import { DeepReadonlyArray, DeepReadonlyObject } from 'typelevel-ts'
 
-import { METADATA_KEY_ACTION } from './constants'
+import { METADATA_KEY_ACTION, PREFIX_OMIT_METHOD } from './constants'
 import { MetadataActionMissingError } from './errors'
+import { ReducerClass } from './reducer-class'
 
 export type Immutable<T> = T extends object ? DeepReadonlyObject<T> : T extends any[] ? DeepReadonlyArray<T> : T
 export interface IReducerMap<T> {
@@ -65,8 +66,14 @@ export class ReducerClassHelpers {
       return accum
     }, {})
   }
-  public getClassInstanceMethodNames(obj: object) {
+  public getClassInstanceMethodNames(obj: object): string[] {
     const proto = Object.getPrototypeOf(obj)
-    return Object.getOwnPropertyNames(proto).filter((name) => name !== 'constructor')
+    if (!(proto instanceof ReducerClass)) {
+      return []
+    }
+    const protoMethodNames = Object.getOwnPropertyNames(proto).filter(
+      (name) => name !== 'constructor' && !name.startsWith(PREFIX_OMIT_METHOD),
+    )
+    return [...this.getClassInstanceMethodNames(proto), ...protoMethodNames]
   }
 }

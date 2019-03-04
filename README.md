@@ -22,6 +22,7 @@ Consider using it with [flux-action-class](https://github.com/keenondrums/flux-a
   - [Step 1](#step-1)
   - [Step 2](#step-2)
   - [How can I make shared reducer's logic dynamic?](#how-can-i-make-shared-reducers-logic-dynamic)
+- [Reducer inheritance](#reducer-inheritance)
 - [In depth](#in-depth)
   - [When can we omit list of actions for `@Action`?](#when-can-we-omit-list-of-actions-for-action)
   - [Running several reducers for the same action](#running-several-reducers-for-the-same-action)
@@ -669,9 +670,6 @@ const reducer = ReducerCat.create()
 ```js
 import { Action, Extend, ReducerClass } from 'reducer-class'
 
-interface IHungryState {
-  hungry: boolean;
-}
 export const makeReducerHungry = (actionHungry, actionFull) =>
   class {
     @Action(actionHungry)
@@ -713,6 +711,76 @@ class CatReducer extends ReducerClass {
 }
 
 const reducer = ReducerCat.create()
+```
+
+</details>
+
+## Reducer inheritance
+
+Any reducer class is still a class, therefore it can be inherited. It's different way to share some common logic and alter the final behavior for children. There's no runtime information about method visibility (`private`, `protected`, `public`), so if you want to share some common logic without wrapping it with `@Action` decorator prefix the shared method with `_`.
+
+```ts
+interface ICatState {
+  enegry: number
+}
+class CatReducer extends ReducerClass<ICatState> {
+  initialState = {
+    energy: 10,
+  }
+
+  @Action
+  addEnergy(state: ICatState, action: ActionCatEat) {
+    return this._addEnergy(state, action)
+  }
+
+  // DO NOT FORGET TO PREFIX IT WITH "_"
+  protected _addEnergy(state: ICatState, action: ActionCatEat): ICatState {
+    return {
+      energy: state.energy + action.payload,
+    }
+  }
+}
+
+class KittenReducer extends CatReducer {
+  // DO NOT FORGET TO PREFIX IT WITH "_"
+  protected _addEnergy(state: ICatState, action: ActionCatEat): ICatState {
+    return {
+      energy: state.energy + action.payload * 10,
+    }
+  }
+}
+```
+
+<details>
+<summary>JavaScript version</summary>
+
+```js
+class CatReducer extends ReducerClass {
+  initialState = {
+    energy: 10,
+  }
+
+  @Action(ActionCatEat)
+  addEnergy(state, action) {
+    return this._addEnergy(state, action)
+  }
+
+  // DO NOT FORGET TO PREFIX IT WITH "_"
+  protected _addEnergy(state, action) {
+    return {
+      energy: state.energy + action.payload,
+    }
+  }
+}
+
+class KittenReducer extends CatReducer {
+  // DO NOT FORGET TO PREFIX IT WITH "_"
+  protected _addEnergy(state, action) {
+    return {
+      energy: state.energy + action.payload * 10,
+    }
+  }
+}
 ```
 
 </details>
